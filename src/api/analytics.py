@@ -42,3 +42,29 @@ def get_transaction_count():
     return {
         "transaction_count":int(result or 0)
     }
+
+
+@router.get("/products/top")
+def get_top_products(limit: int = 10):
+    query = text(
+        """
+        SELECT
+            stock_code,
+            description,
+            SUM(quantity) AS quantity_sold
+        FROM transactions
+        GROUP BY stock_code, description
+        ORDER BY quantity_sold DESC
+        LIMIT :limit
+        """
+    )
+
+    with engine.connect() as connection:
+        rows = connection.execute(
+            query,
+            {"limit": limit},
+        ).mappings().all()
+
+    return {
+        "products": [dict(row) for row in rows]
+    }
