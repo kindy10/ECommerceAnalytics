@@ -64,3 +64,27 @@ def test_top_products_endpoint_with_limit():
     data = response.json()
 
     assert len(data["products"]) == 5
+
+def test_revenue_by_country_endpoint():
+    response = client.get("/api/analytics/revenue/by-country")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert "countries" in data
+    assert isinstance(data["countries"], list)
+    assert len(data["countries"]) > 0
+
+    for country in data["countries"]:
+        assert "country" in country
+        assert "revenue" in country
+
+def test_revenue_by_country_is_sorted():
+    response = client.get("/api/analytics/revenue/by-country")
+
+    data = response.json()["countries"]
+
+    revenues = [country["revenue"] for country in data]
+
+    assert revenues == sorted(revenues, reverse=True)

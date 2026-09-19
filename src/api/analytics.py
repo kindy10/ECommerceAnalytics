@@ -68,3 +68,23 @@ def get_top_products(limit: int = 10):
     return {
         "products": [dict(row) for row in rows]
     }
+
+@router.get("/revenue/by-country")
+def get_revenue_by_country():
+    query = text(
+        """
+        SELECT
+            country,
+            SUM(quantity * unit_price) AS revenue
+        FROM transactions
+        GROUP BY country
+        ORDER BY revenue DESC
+        """
+    )
+
+    with engine.connect() as connection:
+        rows = connection.execute(query).mappings().all()
+
+    return {
+        "countries": [dict(row) for row in rows]
+    }
