@@ -1,0 +1,112 @@
+from fastapi import APIRouter
+from sqlalchemy import text
+
+from src.database.connection import engine
+
+
+router = APIRouter(
+    prefix="/api/analytics",
+    tags=["Analytics"],
+)
+
+
+@router.get("/revenue")
+def get_total_revenue():
+    query = text(
+        """
+        SELECT SUM(quantity * unit_price)
+        FROM transactions
+        """
+    )
+
+    with engine.connect() as connection:
+        result = connection.execute(query).scalar()
+
+    return {
+        "total_revenue": float(result or 0)
+    }
+
+
+@router.get("/transactions/count")
+def get_transaction_count():
+    query = text(
+        """
+        SELECT COUNT(*)
+        FROM transactions
+        """
+    )
+
+    with engine.connect() as connection:
+        result = connection.execute(query).scalar()
+
+    return {
+        "transaction_count":int(result or 0)
+    }
+
+
+@router.get("/products/top")
+def get_top_products(limit: int = 10):
+    query = text(
+        """
+        SELECT
+            stock_code,
+            description,
+            SUM(quantity) AS quantity_sold
+        FROM transactions
+        GROUP BY stock_code, description
+        ORDER BY quantity_sold DESC
+        LIMIT :limit
+        """
+    )
+
+    with engine.connect() as connection:
+        rows = connection.execute(
+            query,
+            {"limit": limit},
+        ).mappings().all()
+
+    return {
+        "products": [dict(row) for row in rows]
+    }
+
+@router.get("/revenue/by-country")
+def get_revenue_by_country():
+    query = text(
+        """
+        SELECT
+            country,
+            SUM(quantity * unit_price) AS revenue
+        FROM transactions
+        GROUP BY country
+        ORDER BY revenue DESC
+        """
+    )
+
+    with engine.connect() as connection:
+        rows = connection.execute(query).mappings().all()
+
+    return {
+        "countries": [dict(row) for row in rows]
+    }
+
+
+@router.get("/revenue/monthly")
+def get_monthly_revenue():
+    query = text(
+        """
+        SELECT
+            strftime('%Y-%m', invoice_date) AS month,
+            SUM(quantity * unit_price) AS revenue
+        FROM transactions
+        GROUP BY month
+        ORDER BY month
+        """
+    )
+
+    with engine.connect() as connection:
+        rows = connection.execute(query).mappings().all()
+
+    return {
+        "monthly_revenue": [dict(row) for row in rows]
+    }
+    

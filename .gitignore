@@ -31,3 +31,5 @@ Thumbs.db
 # Data files
 data/raw/*
 data/processed/*
+*.db
+
