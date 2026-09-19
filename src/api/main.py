@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from src.api.analytics import router as analytics_router
 
 app = FastAPI(
     title="ECommerce Analytics API",
@@ -6,6 +7,7 @@ app = FastAPI(
     version="1.0.0",
 )
 
+app.include_router(analytics_router)
 
 @app.get("/")
 def root():
