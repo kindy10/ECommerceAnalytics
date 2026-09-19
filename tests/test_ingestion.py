@@ -4,8 +4,8 @@ import pytest
 from src.ingestion.load_data import load_raw_data
 
 
-#@pytest.fixture(scope="session")
-@pytest.mark.skip(reason="Not relevant for now")
+@pytest.fixture(scope="session")
+#@pytest.mark.skip(reason="Not relevant for now")
 def raw_data():
     return load_raw_data()
 

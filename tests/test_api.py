@@ -86,6 +86,7 @@ def test_revenue_by_country_is_sorted():
     data = response.json()["countries"]
 
     revenues = [country["revenue"] for country in data]
+    
 
     assert revenues == sorted(revenues, reverse=True)
 
