@@ -88,3 +88,25 @@ def get_revenue_by_country():
     return {
         "countries": [dict(row) for row in rows]
     }
+
+
+@router.get("/revenue/monthly")
+def get_monthly_revenue():
+    query = text(
+        """
+        SELECT
+            strftime('%Y-%m', invoice_date) AS month,
+            SUM(quantity * unit_price) AS revenue
+        FROM transactions
+        GROUP BY month
+        ORDER BY month
+        """
+    )
+
+    with engine.connect() as connection:
+        rows = connection.execute(query).mappings().all()
+
+    return {
+        "monthly_revenue": [dict(row) for row in rows]
+    }
+    

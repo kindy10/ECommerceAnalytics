@@ -88,3 +88,28 @@ def test_revenue_by_country_is_sorted():
     revenues = [country["revenue"] for country in data]
 
     assert revenues == sorted(revenues, reverse=True)
+
+
+def test_monthly_revenue_endpoint():
+    response = client.get("/api/analytics/revenue/monthly")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert "monthly_revenue" in data
+    assert isinstance(data["monthly_revenue"], list)
+    assert len(data["monthly_revenue"]) > 0
+
+    for month in data["monthly_revenue"]:
+        assert "month" in month
+        assert "revenue" in month
+
+def test_monthly_revenue_is_sorted():
+    response = client.get("/api/analytics/revenue/monthly")
+
+    data = response.json()["monthly_revenue"]
+
+    months = [item["month"] for item in data]
+
+    assert months == sorted(months)
