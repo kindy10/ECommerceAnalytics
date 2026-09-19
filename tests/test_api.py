@@ -27,3 +27,15 @@ def test_revenue_endpoint():
     assert "total_revenue" in data
     assert isinstance(data["total_revenue"], float)
     assert data["total_revenue"] > 0
+
+
+
+def test_transaction_count_endpoint():
+    response = client.get("/api/analytics/transactions/count")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert "transaction_count" in data
+    assert data["transaction_count"] == 524878
