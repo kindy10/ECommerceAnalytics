@@ -5,3 +5,5 @@ jupyter
 sqlalchemy
 fastapi
 uvicorn
+streamlit
+requests
