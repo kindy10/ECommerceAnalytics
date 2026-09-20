@@ -51,6 +51,23 @@ try:
             value=f"{transaction_count:,}",
         )
 
+    products_response = requests.get(
+        f"{API_URL}/api/analytics/products/top",
+        params={"limit": 10},
+        timeout=5,
+    )
+
+    products_response.raise_for_status()
+
+    products_data = products_response.json()
+
+    st.subheader("🏆 Top-Selling Products")
+
+    st.dataframe(
+        products_data["products"],
+        use_container_width=True,
+    )
+
 except requests.RequestException:
     st.error(
         "Unable to connect to the Analytics API. "
