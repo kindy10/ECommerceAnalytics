@@ -69,7 +69,7 @@ try:
     )
 
 
-    #Top sellign products
+    #Top selling products
     country_response = requests.get(
         f"{API_URL}/api/analytics/revenue/by-country",
         timeout=5,
@@ -87,6 +87,25 @@ try:
             for item in country_data["countries"]
         }
     )
+
+    #Monthly revenue
+    monthly_response = requests.get(
+        f"{API_URL}/api/analytics/revenue/monthly",
+        timeout=5,
+    )
+
+    monthly_response.raise_for_status()
+
+    monthly_data = monthly_response.json()
+
+    st.subheader("📈 Monthly Revenue")
+
+    monthly_revenue = {
+        item["month"]: item["revenue"]
+        for item in monthly_data["monthly_revenue"]
+    }
+
+    st.line_chart(monthly_revenue)
 
 except requests.RequestException:
     st.error(
