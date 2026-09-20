@@ -68,6 +68,26 @@ try:
         use_container_width=True,
     )
 
+
+    #Top sellign products
+    country_response = requests.get(
+        f"{API_URL}/api/analytics/revenue/by-country",
+        timeout=5,
+    )
+
+    country_response.raise_for_status()
+
+    country_data = country_response.json()
+
+    st.subheader("🌍 Revenue by Country")
+
+    st.bar_chart(
+        {
+            item["country"]: item["revenue"]
+            for item in country_data["countries"]
+        }
+    )
+
 except requests.RequestException:
     st.error(
         "Unable to connect to the Analytics API. "
