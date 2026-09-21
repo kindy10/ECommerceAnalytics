@@ -1,6 +1,21 @@
-import requests
+import sys
+from pathlib import Path
+
 import streamlit as st
 
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.append(str(PROJECT_ROOT))
+
+from src.dashboard.api_client import (
+    get_monthly_revenue,
+    get_revenue_by_country,
+    get_top_products,
+    get_total_revenue,
+    get_transaction_count,
+)
 
 API_URL = "http://127.0.0.1:8000"
 
@@ -13,29 +28,15 @@ st.set_page_config(
 
 
 st.title("📊 E-Commerce Analytics Dashboard")
+
 st.write(
     "Interactive dashboard for exploring e-commerce sales data."
 )
 
+
 try:
-    revenue_response = requests.get(
-        f"{API_URL}/api/analytics/revenue",
-        timeout=5,
-    )
-
-    count_response = requests.get(
-        f"{API_URL}/api/analytics/transactions/count",
-        timeout=5,
-    )
-
-    revenue_response.raise_for_status()
-    count_response.raise_for_status()
-
-    revenue_data = revenue_response.json()
-    count_data = count_response.json()
-
-    total_revenue = revenue_data["total_revenue"]
-    transaction_count = count_data["transaction_count"]
+    total_revenue = get_total_revenue(API_URL)
+    transaction_count = get_transaction_count(API_URL)
 
     col1, col2 = st.columns(2)
 
@@ -51,64 +52,36 @@ try:
             value=f"{transaction_count:,}",
         )
 
-    products_response = requests.get(
-        f"{API_URL}/api/analytics/products/top",
-        params={"limit": 10},
-        timeout=5,
-    )
-
-    products_response.raise_for_status()
-
-    products_data = products_response.json()
+    products = get_top_products(API_URL)
 
     st.subheader("🏆 Top-Selling Products")
 
     st.dataframe(
-        products_data["products"],
+        products,
         use_container_width=True,
     )
 
-
-    #Top selling products
-    country_response = requests.get(
-        f"{API_URL}/api/analytics/revenue/by-country",
-        timeout=5,
-    )
-
-    country_response.raise_for_status()
-
-    country_data = country_response.json()
+    countries = get_revenue_by_country(API_URL)
 
     st.subheader("🌍 Revenue by Country")
 
     st.bar_chart(
         {
             item["country"]: item["revenue"]
-            for item in country_data["countries"]
+            for item in countries
         }
     )
 
-    #Monthly revenue
-    monthly_response = requests.get(
-        f"{API_URL}/api/analytics/revenue/monthly",
-        timeout=5,
-    )
-
-    monthly_response.raise_for_status()
-
-    monthly_data = monthly_response.json()
+    monthly_revenue = get_monthly_revenue(API_URL)
 
     st.subheader("📈 Monthly Revenue")
 
-    monthly_revenue = {
+    monthly_data = {
         item["month"]: item["revenue"]
-        for item in monthly_data["monthly_revenue"]
+        for item in monthly_revenue
     }
 
-    st.line_chart(monthly_revenue)
+    st.line_chart(monthly_data)
 
-except requests.RequestException:
-    st.error(
-        "Unable to connect to the Analytics API. "
-        "Make sure the FastAPI server is running."
-    )
+except Exception as error:
+    st.error(error)
